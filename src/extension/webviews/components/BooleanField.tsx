@@ -21,27 +21,37 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import {
-  ConfigOptions,
-  ConnectionBackend,
-  ConnectionConfig,
-  ExternalConnection,
-} from "../connection_manager_types";
-import { TestableConnection } from "@malloydata/malloy";
+import React, { FormEvent } from "react";
+import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react";
 
-export interface ConnectionFactory {
-  reset(): void;
-
-  getAvailableBackends(): Promise<Array<ConnectionBackend | string>>;
-
-  getExternalConnections(): Promise<Record<string, ExternalConnection>>;
-
-  getConnectionForConfig(
-    connectionConfig: ConnectionConfig,
-    configOptions: ConfigOptions
-  ): Promise<TestableConnection>;
-
-  getWorkingDirectory(url: URL): string;
-
-  addDefaults(configs: ConnectionConfig[]): ConnectionConfig[];
+interface TextFieldProps {
+  value: boolean;
+  setValue: (value: boolean) => void;
+  placeholder?: string;
+  id?: string;
+  style?: React.CSSProperties;
 }
+
+type OnChange<T> = (event: Event & FormEvent<T>) => void;
+
+export const BooleanField: React.FC<TextFieldProps> = ({
+  value,
+  setValue,
+  placeholder,
+  id,
+  style,
+}) => {
+  const onChange: OnChange<HTMLInputElement> = (event) => {
+    setValue(event.currentTarget.checked);
+  };
+
+  return (
+    <VSCodeCheckbox
+      checked={value}
+      onChange={onChange}
+      placeholder={placeholder}
+      id={id}
+      style={style}
+    />
+  );
+};

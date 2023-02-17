@@ -26,6 +26,7 @@ import { DataStyles } from "@malloydata/render";
 import {
   ConnectionBackend,
   ConnectionConfig,
+  ExternalConnection,
 } from "../common/connection_manager_types";
 
 export enum QueryRunStatus {
@@ -102,7 +103,8 @@ export enum ConnectionMessageType {
 interface ConnectionMessageSetConnections {
   type: ConnectionMessageType.SetConnections;
   connections: ConnectionConfig[];
-  availableBackends: ConnectionBackend[];
+  availableBackends: Array<ConnectionBackend | string>;
+  externalConnections: Record<string, ExternalConnection>;
 }
 
 interface ConnectionMessageAppReady {

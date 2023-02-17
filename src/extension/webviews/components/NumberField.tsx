@@ -21,27 +21,40 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import {
-  ConfigOptions,
-  ConnectionBackend,
-  ConnectionConfig,
-  ExternalConnection,
-} from "../connection_manager_types";
-import { TestableConnection } from "@malloydata/malloy";
+import React, { FormEvent } from "react";
+import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react";
 
-export interface ConnectionFactory {
-  reset(): void;
-
-  getAvailableBackends(): Promise<Array<ConnectionBackend | string>>;
-
-  getExternalConnections(): Promise<Record<string, ExternalConnection>>;
-
-  getConnectionForConfig(
-    connectionConfig: ConnectionConfig,
-    configOptions: ConfigOptions
-  ): Promise<TestableConnection>;
-
-  getWorkingDirectory(url: URL): string;
-
-  addDefaults(configs: ConnectionConfig[]): ConnectionConfig[];
+interface NumberFieldProps {
+  value: number;
+  setValue: (value: number) => void;
+  placeholder?: number;
+  id?: string;
+  style?: React.CSSProperties;
+  min?: number;
+  max?: number;
 }
+
+type OnChange<T> = (event: Event & FormEvent<T>) => void;
+
+export const NumberField: React.FC<NumberFieldProps> = ({
+  value,
+  setValue,
+  placeholder,
+  id,
+  style,
+}) => {
+  const onChange: OnChange<HTMLInputElement> = (event) => {
+    setValue(Number(event.currentTarget.value));
+  };
+
+  return (
+    <VSCodeTextField
+      value={value != null && String(value)}
+      type="number"
+      onChange={onChange}
+      placeholder={placeholder}
+      id={id}
+      style={style}
+    />
+  );
+};
