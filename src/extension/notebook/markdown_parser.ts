@@ -1,6 +1,6 @@
 // Taken from https://github.dev/microsoft/vscode-markdown-notebook/blob/9dbbc23729894b92d05e839e485c41d8d85d835d/src/markdownParser.ts
 
-import * as vscode from "vscode";
+import * as vscode from 'vscode';
 
 export interface RawNotebookCell {
   indentation?: string;
@@ -11,9 +11,9 @@ export interface RawNotebookCell {
   kind: vscode.NotebookCellKind;
 }
 
-const LANG_IDS = new Map([["malloy", "malloy"]]);
+const LANG_IDS = new Map([['malloy', 'malloy']]);
 const LANG_ABBREVS = new Map(
-  Array.from(LANG_IDS.keys()).map((k) => [LANG_IDS.get(k), k])
+  Array.from(LANG_IDS.keys()).map(k => [LANG_IDS.get(k), k])
 );
 
 interface ICodeBlockStart {
@@ -50,7 +50,7 @@ export function parseMarkdown(content: string): RawNotebookCell[] {
 
   // Each parse function starts with line i, leaves i on the line after the last line parsed
   for (; i < lines.length; ) {
-    const leadingWhitespace = i === 0 ? parseWhitespaceLines(true) : "";
+    const leadingWhitespace = i === 0 ? parseWhitespaceLines(true) : '';
     if (i >= lines.length) {
       break;
     }
@@ -66,7 +66,7 @@ export function parseMarkdown(content: string): RawNotebookCell[] {
     const start = i;
     const nextNonWhitespaceLineOffset = lines
       .slice(start)
-      .findIndex((l) => l !== "");
+      .findIndex(l => l !== '');
     let end: number; // will be next line or overflow
     let isLast = false;
     if (nextNonWhitespaceLineOffset < 0) {
@@ -78,7 +78,7 @@ export function parseMarkdown(content: string): RawNotebookCell[] {
 
     i = end;
     const numWhitespaceLines = end - start + (isFirst || isLast ? 0 : 1);
-    return "\n".repeat(numWhitespaceLines);
+    return '\n'.repeat(numWhitespaceLines);
   }
 
   function parseCodeBlock(
@@ -102,10 +102,10 @@ export function parseMarkdown(content: string): RawNotebookCell[] {
 
     const content = lines
       .slice(startSourceIdx, i - 1)
-      .map((line) =>
-        line.replace(new RegExp("^" + codeBlockStart.indentation), "")
+      .map(line =>
+        line.replace(new RegExp('^' + codeBlockStart.indentation), '')
       )
-      .join("\n");
+      .join('\n');
     const trailingWhitespace = parseWhitespaceLines(false);
     cells.push({
       language,
@@ -125,17 +125,17 @@ export function parseMarkdown(content: string): RawNotebookCell[] {
       }
 
       const currLine = lines[i];
-      if (currLine === "" || isCodeBlockStart(currLine)) {
+      if (currLine === '' || isCodeBlockStart(currLine)) {
         break;
       }
 
       i++;
     }
 
-    const content = lines.slice(startSourceIdx, i).join("\n");
+    const content = lines.slice(startSourceIdx, i).join('\n');
     const trailingWhitespace = parseWhitespaceLines(false);
     cells.push({
-      language: "markdown",
+      language: 'markdown',
       content,
       kind: vscode.NotebookCellKind.Markup,
       leadingWhitespace: leadingWhitespace,
@@ -149,23 +149,23 @@ export function parseMarkdown(content: string): RawNotebookCell[] {
 export function writeCellsToMarkdown(
   cells: ReadonlyArray<vscode.NotebookCellData>
 ): string {
-  let result = "";
+  let result = '';
   for (let i = 0; i < cells.length; i++) {
     const cell = cells[i];
     if (i === 0) {
-      result += cell.metadata?.leadingWhitespace ?? "";
+      result += cell.metadata?.['leadingWhitespace'] ?? '';
     }
 
     if (cell.kind === vscode.NotebookCellKind.Code) {
-      const indentation = cell.metadata?.indentation || "";
+      const indentation = cell.metadata?.['indentation'] || '';
       const languageAbbrev =
         LANG_ABBREVS.get(cell.languageId) ?? cell.languageId;
-      const codePrefix = indentation + "```" + languageAbbrev + "\n";
+      const codePrefix = indentation + '```' + languageAbbrev + '\n';
       const contents = cell.value
         .split(/\r?\n/g)
-        .map((line) => indentation + line)
-        .join("\n");
-      const codeSuffix = "\n" + indentation + "```";
+        .map(line => indentation + line)
+        .join('\n');
+      const codeSuffix = '\n' + indentation + '```';
 
       result += codePrefix + contents + codeSuffix;
     } else {
@@ -185,20 +185,20 @@ function getBetweenCellsWhitespace(
   const nextCell = cells[idx + 1];
 
   if (!nextCell) {
-    return thisCell.metadata?.trailingWhitespace ?? "\n";
+    return thisCell.metadata?.['trailingWhitespace'] ?? '\n';
   }
 
-  const trailing = thisCell.metadata?.trailingWhitespace;
-  const leading = nextCell.metadata?.leadingWhitespace;
+  const trailing = thisCell.metadata?.['trailingWhitespace'];
+  const leading = nextCell.metadata?.['leadingWhitespace'];
 
-  if (typeof trailing === "string" && typeof leading === "string") {
+  if (typeof trailing === 'string' && typeof leading === 'string') {
     return trailing + leading;
   }
 
   // One of the cells is new
-  const combined = (trailing ?? "") + (leading ?? "");
-  if (!combined || combined === "\n") {
-    return "\n\n";
+  const combined = (trailing ?? '') + (leading ?? '');
+  if (!combined || combined === '\n') {
+    return '\n\n';
   }
 
   return combined;

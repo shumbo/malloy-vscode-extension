@@ -1,5 +1,5 @@
 {
-  "name": "malloy-vscode",
+  "name": "malloy-vscode-notebook",
   "publisher": "malloydata",
   "displayName": "Malloy",
   "description": "Malloy is an experimental language for describing data relationships and transformations",
@@ -15,7 +15,7 @@
     ]
   },
   "engines": {
-    "vscode": "^1.63.0",
+    "vscode": "^1.75.1",
     "node": ">=11"
   },
   "scripts": {
@@ -144,6 +144,16 @@
         "title": "Run Unnamed SQL Block",
         "category": "Malloy",
         "enablement": "false"
+      }
+    ],
+    "notebookRenderer": [
+      {
+        "id": "malloy-renderer",
+        "displayName": "Malloy Renderer",
+        "mimeTypes": [
+          "x-application/malloy"
+        ],
+        "entrypoint": "./dist/entry.js"
       }
     ],
     "menus": {

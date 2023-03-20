@@ -41,8 +41,8 @@ import {URLReader} from '@malloydata/malloy';
 import {v4 as uuid} from 'uuid';
 
 import {MALLOY_EXTENSION_STATE} from './state';
-import { MalloyNotebookSerializer } from "./notebook/serializer";
-import { MalloyNotebookController } from "./notebook/controller";
+import {MalloyNotebookSerializer} from './notebook/serializer';
+import {MalloyNotebookController} from './notebook/controller';
 
 function getNewClientId(): string {
   return uuid();
@@ -148,11 +148,13 @@ export const setupSubscriptions = (
 
   context.subscriptions.push(
     vscode.workspace.registerNotebookSerializer(
-      "malloy-notebook",
+      'malloy-notebook',
       new MalloyNotebookSerializer(),
       MalloyNotebookSerializer.providerOptions
     )
   );
 
-  context.subscriptions.push(new MalloyNotebookController());
+  context.subscriptions.push(
+    new MalloyNotebookController(connectionManager, urlReader)
+  );
 };

@@ -21,13 +21,12 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import * as fs from 'fs';
 import {TextDocuments} from 'vscode-languageserver/node';
 import {Model, Runtime} from '@malloydata/malloy';
 import {TextDocument} from 'vscode-languageserver-textdocument';
 import {ConnectionManager} from '../../common/connection_manager';
 import {TranslateCache} from '../types';
-import {fileURLToPath} from 'url';
+import {connection} from './connections_node';
 
 export class TranslateCacheNode implements TranslateCache {
   cache = new Map<string, {model: Model; version: number}>();
@@ -37,11 +36,12 @@ export class TranslateCacheNode implements TranslateCache {
     uri: URL
   ): Promise<string> {
     const cached = documents.get(uri.toString());
-    if (cached) {
+    if (cached && uri.protocol !== 'vscode-notebook-cell:') {
       return cached.getText();
     } else {
-      // TODO catch a file read error
-      return fs.readFileSync(fileURLToPath(uri), 'utf-8');
+      return await connection.sendRequest('malloy/fetchFile', {
+        uri: uri.toString(),
+      });
     }
   }
 

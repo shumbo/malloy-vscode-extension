@@ -20,31 +20,65 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* eslint-disable no-console */
 
 import {URLReader} from '@malloydata/malloy';
 import * as vscode from 'vscode';
 
-export async function fetchFile(uri: string): Promise<string> {
+const fixNotebookUri = (uri: vscode.Uri) => {
+  if (uri.scheme === 'vscode-notebook-cell') {
+    const {scheme} = vscode.workspace.workspaceFolders[0].uri;
+    uri = vscode.Uri.from({
+      scheme,
+      authority: uri.authority,
+      path: uri.path,
+      query: uri.query,
+    });
+  }
+
+  return uri;
+};
+
+export async function fetchFile(uriString: string): Promise<string> {
+  const uri = vscode.Uri.parse(uriString);
+  const {path, fragment} = uri;
   const openFiles = vscode.workspace.textDocuments;
-  const openDocument = openFiles.find(
-    document => document.uri.toString() === uri
-  );
-  // Only get the text from VSCode's open files if the file is already open in VSCode,
-  // otherwise, just read the file from the file system
-  if (openDocument !== undefined) {
-    return openDocument.getText();
+  if (uri.scheme === 'vscode-notebook-cell' && fragment) {
+    let text = '';
+    const notebook = vscode.workspace.notebookDocuments.find(
+      notebook => notebook.uri.path === path
+    );
+    const cells = notebook.getCells();
+    for (const cell of cells) {
+      if (cell.kind === vscode.NotebookCellKind.Code) {
+        text += `\n// --! cell ${cell.document.uri.fragment}\n`;
+        text += cell.document.getText();
+      }
+      if (fragment === cell.document.uri.fragment) {
+        break;
+      }
+    }
+    return text;
   } else {
-    const contents = await vscode.workspace.fs.readFile(vscode.Uri.parse(uri));
-    return new TextDecoder('utf-8').decode(contents);
+    const openDocument = openFiles.find(
+      document => document.uri.toString() === uriString
+    );
+    // Only get the text from VSCode's open files if the file is already open in VSCode,
+    // otherwise, just read the file from the file system
+    if (openDocument !== undefined) {
+      return openDocument.getText();
+    } else {
+      const contents = await vscode.workspace.fs.readFile(fixNotebookUri(uri));
+      return new TextDecoder('utf-8').decode(contents);
+    }
   }
 }
 
 export async function fetchBinaryFile(
-  uri: string
+  uriString: string
 ): Promise<Uint8Array | undefined> {
+  const uri = fixNotebookUri(vscode.Uri.parse(uriString));
   try {
-    return await vscode.workspace.fs.readFile(vscode.Uri.parse(uri));
+    return await vscode.workspace.fs.readFile(uri);
   } catch (error) {
     console.error(error);
   }

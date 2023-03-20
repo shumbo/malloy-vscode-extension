@@ -315,6 +315,18 @@ export async function doBuild(
     plugins: webviewPlugins,
   };
 
+  const rendererOptions: BuildOptions = {
+    ...baseOptions,
+    entryPoints: ['./src/extension/notebook/renderer/entry.tsx'],
+    entryNames: '[name]',
+    platform: 'browser',
+    define: {
+      'process.env.NODE_DEBUG': 'false', // TODO this is a hack because some package we include assumed process.env exists :(
+    },
+    // plugins: webviewPlugins,
+    format: 'esm',
+  };
+
   if (!target || target === 'web') {
     const browserPlugins: Plugin[] = [];
 
@@ -360,6 +372,8 @@ export async function doBuild(
     }
     const webviewContext = await context(webviewOptions);
     await webviewContext.watch();
+    const rendererContext = await context(rendererOptions);
+    await rendererContext.watch();
     if (browserOptions && browserServerOptions) {
       const browserContext = await context(browserOptions);
       const browserServerContext = await context(browserServerOptions);
@@ -379,10 +393,15 @@ export async function doBuild(
       }
     }
     const webviewResult = await build(webviewOptions);
+    const rendererResult = await build(rendererOptions);
     if (metadata) {
       fs.writeFileSync(
         'meta-webview.json',
         JSON.stringify(webviewResult.metafile)
+      );
+      fs.writeFileSync(
+        'meta-renderer.json',
+        JSON.stringify(rendererResult.metafile)
       );
     }
     if (browserOptions && browserServerOptions) {
